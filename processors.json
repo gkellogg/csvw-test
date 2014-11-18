@@ -1,0 +1,10 @@
+{
+  "dummy": {
+    "endpoint": "http://example.org/extractor?uri=",
+    "doap": "http://example.org/about"
+  },
+  "other":  {
+    "endpoint": "",
+    "doap": ""
+  }
+}

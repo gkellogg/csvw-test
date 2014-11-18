@@ -1,0 +1,262 @@
+{
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "mf": "http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#",
+    "mq": "http://www.w3.org/2001/sw/DataAccess/tests/test-query#",
+    "csvt": "http://w3c.github.io/csvw/test-vocab#",
+    "id": "@id",
+    "type": "@type",
+    "name": "mf:name",
+    "comment": "rdfs:comment",
+    "entries": {
+      "@id": "mf:entries",
+      "@type": "@id",
+      "@container": "@list"
+    },
+    "action": "mf:action",
+    "data": {
+      "@id": "mq:data",
+      "@type": "@id"
+    },
+    "result": {
+      "@id": "mf:result",
+      "@type": "@id"
+    },
+    "vocab_expansion": {
+      "@id": "mf:vocab_expansion"
+    },
+    "registry": {
+      "@id": "mf:registry",
+      "@type": "@id"
+    },
+    "positiveTest": "mf:positiveTest"
+  },
+  "@graph": [
+    {
+      "entries": [
+        {
+          "action": {
+            "id": "test001.csv"
+          },
+          "comment": "The simplest possible table",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test001j",
+          "name": "Simple table (json)",
+          "result": "test001.jsonld",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test002.csv"
+          },
+          "comment": "Table with one field being quoted",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test002j",
+          "name": "Table with quoted field (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test003.csv"
+          },
+          "comment": "Table with whitespace before and after every field",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test003j",
+          "name": "Simple table with surrounding spaces (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test004.csv"
+          },
+          "comment": "Table with whitespace before and after every field and one field quoted",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test004j",
+          "name": "Table with quoted field with surrounding spaces (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test005.csv"
+          },
+          "comment": "A table with entity identifiers and references to other entities",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test005j",
+          "name": "Table with identifiers references (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test006.csv"
+          },
+          "comment": "Records contain two entities with relationships which are duplicated",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test006j",
+          "name": "Simple join table without identifiers (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test007.csv"
+          },
+          "comment": "Joined data with identified records",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test007j",
+          "name": "Join table with unique identifiers (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test008.csv"
+          },
+          "comment": "One field has comma-separated values",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test008j",
+          "name": "Microsyntax - internal field separator (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test009.csv"
+          },
+          "comment": "Field with parseable human formatted time",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test009j",
+          "name": "Microsyntax - formatted time (json)",
+          "type": "csvt:JsonDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test001.csv"
+          },
+          "comment": "The simplest possible table",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test001r",
+          "name": "Simple table (rdf)",
+          "result": "test001.jsonld",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test002.csv"
+          },
+          "comment": "Table with one field being quoted",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test002r",
+          "name": "Table with quoted field (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test003.csv"
+          },
+          "comment": "Table with whitespace before and after every field",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test003r",
+          "name": "Simple table with surrounding spaces (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test004.csv"
+          },
+          "comment": "Table with whitespace before and after every field and one field quoted",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test004r",
+          "name": "Table with quoted field with surrounding spaces (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test005.csv"
+          },
+          "comment": "A table with entity identifiers and references to other entities",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test005r",
+          "name": "Table with identifiers references (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test006.csv"
+          },
+          "comment": "Records contain two entities with relationships which are duplicated",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test006r",
+          "name": "Simple join table without identifiers (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test007.csv"
+          },
+          "comment": "Joined data with identified records",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test007r",
+          "name": "Join table with unique identifiers (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test008.csv"
+          },
+          "comment": "One field has comma-separated values",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test008r",
+          "name": "Microsyntax - internal field separator (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        },
+        {
+          "action": {
+            "id": "test009.csv"
+          },
+          "comment": "Field with parseable human formatted time",
+          "csvt:approval": {
+            "id": "csvt:Proposed"
+          },
+          "id": "test009r",
+          "name": "Microsyntax - formatted time (rdf)",
+          "type": "csvt:RdfDirectMappingTest"
+        }
+      ],
+      "id": "",
+      "name": "CSV+ tests",
+      "type": "mf:Manifest"
+    }
+  ]
+}
