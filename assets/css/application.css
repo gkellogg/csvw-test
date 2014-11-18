@@ -37,10 +37,7 @@
   ul.range-list > li {display: inline;}
   ul.range-list > li:after { content: " or ";}
   ul.range-list > li:last-child:after { content: "";}
-  
-  div.nav-login form.signin {margin: 0px;}
-  form.signin fieldset {padding: 10px;}
-  form.signin fieldset input.text {margin-top: 8px;}
-  form.signin fieldset input.password {margin-top: 8px;}
-  form.signin fieldset input.checkbox {float: left; margin-right: 10px;}
+
+  ul.tests li {padding: 0;}
+  ul.tests > li > div {padding: 0;}
 }

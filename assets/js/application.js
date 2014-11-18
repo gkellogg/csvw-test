@@ -45,6 +45,15 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
      $scope.$location = $location;
      $scope.$routeParams = $routeParams;
    })
+  .controller('TestStatusCtrl', ['$scope', '$log', 'Test',
+    function ($scope, $log, Test) {
+      $log.debug("TestStatusCtrl");
+      $scope.status = false;
+      $scope.total = 0;
+      $scope.passed = 0;
+      $scope.failed = 0;
+    }
+  ])
   .controller('TestListCtrl', ['$scope', '$log', 'Test',
     function ($scope, $log, Test) {
       // Get all terms from the vocabulary
