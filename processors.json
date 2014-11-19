@@ -1,10 +1,14 @@
-{
-  "dummy": {
+[
+  {
+    "id": "dummy",
+    "name": "dummy",
     "endpoint": "http://example.org/extractor?uri=",
     "doap": "http://example.org/about"
   },
-  "other":  {
+  {
+    "id": "other",
+    "name": "other",
     "endpoint": "",
     "doap": ""
   }
-}
+]

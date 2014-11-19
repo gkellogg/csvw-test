@@ -45,6 +45,13 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
      $scope.$location = $location;
      $scope.$routeParams = $routeParams;
    })
+  .controller('ProcessorCtrl', ['$scope', '$log', 'Test',
+    function ($scope, $log, Test) {
+      $log.debug("ProcessorCtrl");
+      // Processors from script tag
+      $scope.processors = angular.fromJson($("script#processors").text());
+    }
+  ])
   .controller('TestStatusCtrl', ['$scope', '$log', 'Test',
     function ($scope, $log, Test) {
       $log.debug("TestStatusCtrl");

@@ -14,7 +14,7 @@
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular#{'.min' if settings.production?}.js"}
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route#{'.min' if settings.production?}.js"}
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-resource#{'.min' if settings.production?}.js"}
-    %script{id: "processors", type: "application/ld+json"}
+    %script{id: "processors", type: "application/json"}
       != processors
     != js :app
   %body(role="document")

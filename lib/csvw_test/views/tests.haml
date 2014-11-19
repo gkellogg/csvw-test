@@ -1,10 +1,13 @@
 %div.row
-  %ul.pull-right.list-inline#processor
+  %ul.pull-right.list-inline#processor{"ng-controller" => "ProcessorCtrl"}
     %li.dropdown
-      %button.btn.dropdown-toggle{"data-toggle" => "dropdown"}
+      %button.btn.btn-primary.dropdown-toggle{"data-toggle" => "dropdown", href: "#", "aria-expanded" => "false"}
         Processor
         %b.caret
-      %ul.processors.dropdown-menu
+      %ul.processors.dropdown-menu{role: "menu"}
+        %li{id: "{{processor.id}}", 'ng-repeat' => 'processor in processors'}
+          %a{href: "#", "data-value" => "{{processor.endpoint}}"}
+            {{processor.name}}
     %li
       %form
         %input.search-query#processor-url{:type => "text", :placeholder => "Processor URL"}
