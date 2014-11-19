@@ -1,5 +1,5 @@
 // Templates for Angular.js rendering
-%div.row{"ng-controller" => "TestListCtrl"}
+%div.row
   %h1
     {{title}}
   %div
@@ -7,7 +7,7 @@
   %ul.tests.container-fluid.list-group{"ng-show" => "tests.length"}
     %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
       %div.col-md-1
-        %button.btn.btn-primary.test
+        %button.btn.btn-primary.test{"ng-click" => "runTest(test)"}
           Test
       %div.col-md-9
         %span.test-num
