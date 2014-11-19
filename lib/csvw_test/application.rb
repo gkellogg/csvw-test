@@ -10,7 +10,6 @@ module CSVWTest
     configure do
       set :root, APP_DIR
       set :public_folder, PUB_DIR
-      set :test_folder, TEST_DIR
       set :environment, ENV.fetch('RACK_ENV', 'development')
       set :views, ::File.expand_path('../views',  __FILE__)
       set :app_name, "The CSVW Test Harness"
@@ -102,8 +101,9 @@ module CSVWTest
           body manifest_json
         }
         wants.ttl {
-          etag File.read("#{settings.test_folder}/manifest.ttl").hash
-          send_file "#{settings.test_folder}/manifest.ttl"
+          etag manifest_ttl.to_s.hash
+          content_type :ttl
+          body manifest_ttl.to_s
         }
       end
     end
@@ -144,18 +144,6 @@ module CSVWTest
       entry.run(extractor)
       content_type :jsonld
       entry.to_jsonld
-    end
-
-    # Return test files
-    # XXX add other headers based on information in test manifest
-    get '/tests/:file' do
-      path = "#{settings.test_folder}/#{params[:file]}"
-      raise NotFound unless File.exist?(path)
-
-      # Simply return the file
-      etag File.read(path).hash
-      set_cache_header
-      send_file path
     end
 
     # Angular route partials

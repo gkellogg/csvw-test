@@ -1,13 +1,15 @@
 require 'linkeddata'
 require 'sparql'
+require 'restclient/components'
+require 'rack/cache'
+require 'fileutils'
 
 module CSVWTest
   ##
   # Core utilities used for generating and checking test cases
   module Core
-    MANIFEST_FILE  = File.join(TEST_DIR, "manifest.ttl")
-    MANIFEST_JSON  = File.join(TEST_DIR, "manifest.jsonld")
-    MANIFEST_FRAME = File.join(TEST_DIR, "context.jsonld")
+    MANIFEST_JSON  = File.join(CACHE_DIR, "manifest.jsonld")
+    MANIFEST_FRAME = File.join(PUB_DIR, "context.jsonld")
     BASE           = "fix:me/"
 
     # Internal representation of manifest
@@ -67,13 +69,6 @@ module CSVWTest
       )
       end
 
-      def action_file; File.join(TEST_DIR, action.split('/').last); end
-      def result_file; File.join(TEST_DIR, result.split('/').last); end
-      def action_content; File.read(action_file); end
-      def result_content; File.read(result_file); end
-      def action_object; JSON.parse(action_content); end
-      def result_object; JSON.parse(result_content); end
-
       ##
       # Performs a given unit test given the extractor URL
       #
@@ -128,15 +123,11 @@ module CSVWTest
     end
 
     ##
-    # Return the Manifest source
+    # Proxy the Manifest resource
     #
-    # For version/suite specific manifests, the MF syntax is used,
-    # instead of TestQuery; this makes EARL reporting simpler.
-    #
-    # @param [String] version
-    # @param [String] suite
+    # @return [RestClient::Resource]
     def manifest_ttl
-      @manifest_ttl ||= File.read(MANIFEST_FILE)
+      @manifest_ttl ||= RestClient.get(TEST_URI.join("manifest.ttl").to_s)
     end
     module_function :manifest_ttl
 
@@ -145,7 +136,10 @@ module CSVWTest
     #
     # Generate a JSON-LD compatible with framing in MANIFEST_FRAME
     def manifest_json
-      unless File.exist?(MANIFEST_JSON) && File.mtime(MANIFEST_JSON) >= File.mtime(MANIFEST_FILE)
+      ttl_time = Time.parse(manifest_ttl.headers[:last_modified])
+      unless File.exist?(MANIFEST_JSON) && File.mtime(MANIFEST_JSON) >= ttl_time
+        settings.logging.info "Build manifest.jsonld"
+        FileUtils.mkdir_p(CACHE_DIR)
         File.open(MANIFEST_JSON, "w") do |f|
           graph = RDF::Graph.new << RDF::Turtle::Reader.new(manifest_ttl)
           JSON::LD::API.fromRDF(graph) do |expanded|
@@ -158,12 +152,15 @@ module CSVWTest
         @manifest_json = nil
       end
       @manifest_json ||= File.read(MANIFEST_JSON)
+    rescue
+      FileUtils.rm MANIFEST_JSON if File.exist?(MANIFEST_JSON)
+      raise
     end
     module_function :manifest_json
 
     # Get manifest object
     def get_manifest
-      @manifest ||= Manifest.new(JSON.parse(manifest_json)['@graph'], logger: settings.logger)
+      @manifest ||= Manifest.new(JSON.parse(manifest_json)['@graph'].first, logger: settings.logging)
     end
     module_function :get_manifest
 

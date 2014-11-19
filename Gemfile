@@ -7,6 +7,8 @@ gem 'sinatra-partial',        '~> 0.4.0'
 gem 'haml'
 gem 'linkeddata'
 gem 'rack-cache'
+gem 'rest-client'
+gem 'rest-client-components'
 gem 'json-compare'
 
 group :development do
