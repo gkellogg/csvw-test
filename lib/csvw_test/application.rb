@@ -135,15 +135,16 @@ module CSVWTest
     # @option params [String] :extractor
     #   URL of test endpoint, to which the source and run-time parameters are added.
     post '/tests/:testId' do
-      extractor = params.fetch("extractor", "http://example.org/extractor?uri=")
+      extractor = params.fetch("extractor", "http://example.org/reflector?uri=")
 
       entry = get_entry(params[:testId])
-      raise NotFound, "No test entry found" unless entry
+      raise Sinatra::NotFound, "No test entry found" unless entry
     
       # Run the test, and re-serialize the entry, including test results
-      entry.run(extractor)
-      content_type :jsonld
-      entry.to_jsonld
+      entry.run(extractor) do |body, passed|
+        content_type :jsonld
+        entry.attributes.merge(result_body: body, status: passed ? "Pass" : "Fail").to_json
+      end
     end
 
     # Angular route partials

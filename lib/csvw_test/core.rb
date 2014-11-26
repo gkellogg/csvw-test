@@ -34,6 +34,20 @@ module CSVWTest
         super
       end
 
+      def id; self.attributes['id']; end # because we don't use @id
+
+      # Alias data and query
+      def action_body
+        @action_body ||= RestClient.get(action_loc.to_s)
+      end
+
+      def result_body
+        @result_body ||= RestClient.get(result_loc.to_s)
+      end
+
+      def action_loc; TEST_URI.join(action); end
+      def result_loc; TEST_URI.join(result); end
+
       def evaluate?
         Array(attributes['@type']).join(" ").match(/Eval/)
       end
@@ -57,7 +71,14 @@ module CSVWTest
       def sparql?
         !Array(attributes['@type']).join(" ").match(/sparql/i)
       end
-      
+
+      def attributes
+        super.merge(
+          accept_body:    self.action_body,
+          result_body:    self.result_body
+        )
+      end
+
       def inspect
         super.sub('>', "\n" +
         "  json?: #{json?.inspect}\n" +
@@ -70,51 +91,66 @@ module CSVWTest
       end
 
       ##
-      # Performs a given unit test given the extractor URL
+      # Performs a given unit test given the extractor URL.
       #
-      # @param [RDF::URI, String] extract_url The CSVW extractor web service.
-      # @return [Array<String,Boolean>] extracted content and PASS/FAIL result
+      # Updates this test with the result and test status of PASS/FAIL
+      #
+      # @override run(extract_url, &block)
+      #   @param [RDF::URI, String] extract_url The CSVW extractor web service.
+      #   @yield result_body, status
+      #   @yieldparam [String] result_body Returned document
+      #   @yieldparam [Boolean] status PASS/FAIL result
+      #   @return [Object] yield results
+      #
+      # @override run(extract_url)
+      #   @param [RDF::URI, String] extract_url The CSVW extractor web service.
+      #   @return [Boolean] PASS/FAIL result
       def run(extract_url, options = {})
         # Build the RDF extractor URL
         # FIXME: include other processor control parameters
-        extract_url = ::URI.decode(extract_url) + id
+        extract_url = ::URI.decode(extract_url) + TEST_URI.join(self.action)
 
-        logger.info entry.inspect
+        logger.info "Run #{self.inspect}"
         logger.debug "extract from: #{extract_url}"
 
         # Retrieve the remote graph
-        extracted = RDF::Util::File.open_file(extract_url)
-        extracted_doc = extracted.read
-        logger.debug "extracted:\n#{extracted_doc}, content-type: #{extracted.content_type.inspect}"
+        # Use the actual result file if using the reflector
+        extract_url = result_loc if extract_url.to_s.start_with?('http://example.org/reflector')
+        extracted = RestClient.get(extract_url)
+        logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
 
         result = if json?
           # Read both as JSON and compare
-          extracted_object = JSON.parse(extracted_doc)
+          extracted_object = JSON.parse(extracted)
+          result_object = JSON.parse(result_body)
           JsonCompare.get_diff(extracted_object, result_object).empty?
         else
           # parse extracted as RDF
           reader = RDF::Reader.for(sample: extacted_doc)
-          graph = RDF::Graph.new << reader.new(extracted_doc)
+          graph = RDF::Graph.new << reader.new(extracted)
           logger.debug "extracted:\n#{graph.count} statements"
           if sparql?
-            SPARQL::Grammer.open(result_file) do |query|
+            SPARQL::Grammer.open(result_loc) do |query|
               graph.query(query)
             end
           else
-            expected_graph = RDF::Graph.load(result_file)
-            graph.isomorphic?(expected_graph)
+            result_graph = RDF::Graph.load(result_loc)
+            graph.isomorphic?(result_graph)
           end
         end
 
         result = !result if negative?
 
-        logger.info result ? "PASS" : "FAIL"
-        [extracted_doc, result]
+        if block_given?
+          yield extracted, result
+        else
+          result
+        end
       end
 
     private
       def logger
-        options[:logger] ||= begin
+        @options[:logger] ||= begin
           l = Logger.new(STDOUT)  # In case we're not invoked from rack
           l.level = Logger::DEBUG
           l

@@ -1,8 +1,8 @@
 [
   {
-    "id": "dummy",
-    "name": "dummy",
-    "endpoint": "http://example.org/extractor?uri=",
+    "id": "reflector",
+    "name": "Reflector",
+    "endpoint": "http://example.org/reflector?uri=",
     "doap": "http://example.org/about"
   },
   {
