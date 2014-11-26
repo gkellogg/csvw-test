@@ -74,7 +74,9 @@ module CSVWTest
 
       def attributes
         super.merge(
-          accept_body:    self.action_body,
+          action_loc:     self.action_loc,
+          action_body:    self.action_body,
+          result_loc:     self.result_loc,
           result_body:    self.result_body
         )
       end

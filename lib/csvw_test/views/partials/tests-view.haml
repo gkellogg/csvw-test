@@ -109,14 +109,45 @@
   %div
     {{description}}
   %ul.tests.container.list-group{"ng-show" => "tests.length"}
-    %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
-      %div.col-md-1.col-sm-1.col-xs-1
-        %button.btn.test{"ng-click" => "runTest(test)", "ng-class" => "{'btn-default': (test.status === 'Running'), 'btn-primary': (test.status === 'Test'), 'btn-success': (test.status === 'Pass'), 'btn-warning': (test.status === 'Fail'), 'btn-danger': (test.status === 'Error')}"}
-          {{test.status}}
-      %div.col-md-9.col-sm-9.col-xs-9
-        %span.test-num
-          Test {{test.id}}:
-        %span.description
-          {{test.comment}}
-      %div.pull-right
-        %button.btn.btn-info.details{"data-loading-text" => "Loading details ...", "data-complete-text" => "details", autocomplete: "off"}="details"
+    %li.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
+      %div.row.test-entry
+        %div.col-md-1.col-sm-1.col-xs-1
+          %button.btn.test{"ng-click" => "runTest(test)", "ng-class" => "{'btn-default': (test.status === 'Running'), 'btn-primary': (test.status === 'Test'), 'btn-success': (test.status === 'Pass'), 'btn-warning': (test.status === 'Fail'), 'btn-danger': (test.status === 'Error')}"}
+            {{test.status}}
+        %div.col-md-9.col-sm-9.col-xs-9
+          %span.test-num
+            Test {{test.id}}:
+          %span.description
+            {{test.comment}}
+        %div.pull-right
+          %button.btn.btn-info.details{'ng-click' => 'test.details = !test.details', 'ng-class' => '{disabled: !test.action_body}'}="details"
+      %div.row.test-detail.alert.alert-info{role: 'alert', "ng-show" => "test.details"}
+        %button.close{type: "button", 'ng-click' => 'test.details = false'}
+          %span{"aria-hidden" => true}
+            &times;
+          %span.sr-only
+            Close
+        %div
+          %h3
+            Source Document
+            %em.doc-url
+              %a.window
+                {{test.action_loc}}
+          %pre<
+            {{test.action_body}}
+        %div
+          %h3
+            Expected Document
+            %em.doc-url
+              %a.window
+                {{test.result_loc}}
+          %pre<
+            {{test.result_body}}
+        %div
+          %h3
+            Extracted
+            %em.doc-url
+              %a.window
+                {{processor_url + test.action_loc}}
+          %pre<
+            {{test.extracted_body}}

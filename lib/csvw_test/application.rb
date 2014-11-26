@@ -143,7 +143,10 @@ module CSVWTest
       # Run the test, and re-serialize the entry, including test results
       entry.run(extractor) do |body, passed|
         content_type :jsonld
-        entry.attributes.merge(result_body: body, status: passed ? "Pass" : "Fail").to_json
+        entry.attributes.merge(
+          extracted_body: body,
+          status:         passed ? "Pass" : "Fail"
+        ).to_json
       end
     end
 

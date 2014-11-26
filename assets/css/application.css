@@ -40,4 +40,6 @@
 
   ul.tests li {padding: 0;}
   ul.tests > li > div {padding: 0;}
+
+  .doc-url {font-size: small;}
 }
