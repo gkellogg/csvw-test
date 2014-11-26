@@ -125,27 +125,28 @@ module CSVWTest
       end
     end
 
-    # POST "/tests/:entry" runs a test with the provided extractor.
-    # the extractor should return either JSON or some RDF formatted file
+    # POST "/tests/:entry" runs a test with the provided processorUrl.
+    # the processor should return either JSON or some RDF formatted file
     # which is the result of performing the test.
     #
     # @method run_test
     # @param [String] testId last path component indicating particular test
     # @param [Hash{String => String}] params
-    # @option params [String] :extractor
+    # @option params [String] :processorUrl
     #   URL of test endpoint, to which the source and run-time parameters are added.
     post '/tests/:testId' do
-      extractor = params.fetch("extractor", "http://example.org/reflector?uri=")
+      processor_url = params.fetch("processorUrl", "http://example.org/reflector?uri=")
 
       entry = get_entry(params[:testId])
       raise Sinatra::NotFound, "No test entry found" unless entry
     
       # Run the test, and re-serialize the entry, including test results
-      entry.run(extractor) do |body, passed|
+      entry.run(processor_url) do |body, status|
         content_type :jsonld
         entry.attributes.merge(
+          extracted_loc:  (processor_url + entry.action_loc),
           extracted_body: body,
-          status:         passed ? "Pass" : "Fail"
+          status:         status
         ).to_json
       end
     end

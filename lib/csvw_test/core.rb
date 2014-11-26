@@ -45,8 +45,8 @@ module CSVWTest
         @result_body ||= RestClient.get(result_loc.to_s)
       end
 
-      def action_loc; TEST_URI.join(action); end
-      def result_loc; TEST_URI.join(result); end
+      def action_loc; TEST_URI.join(action).to_s; end
+      def result_loc; TEST_URI.join(result).to_s; end
 
       def evaluate?
         Array(attributes['@type']).join(" ").match(/Eval/)
@@ -97,54 +97,61 @@ module CSVWTest
       #
       # Updates this test with the result and test status of PASS/FAIL
       #
-      # @override run(extract_url, &block)
-      #   @param [RDF::URI, String] extract_url The CSVW extractor web service.
+      # @override run(processor_url, &block)
+      #   @param [RDF::URI, String] processor_url The CSVW extractor web service.
       #   @yield result_body, status
       #   @yieldparam [String] result_body Returned document
-      #   @yieldparam [Boolean] status PASS/FAIL result
+      #   @yieldparam [String] status Pass/Fail/Error result
       #   @return [Object] yield results
       #
-      # @override run(extract_url)
-      #   @param [RDF::URI, String] extract_url The CSVW extractor web service.
+      # @override run(processor_url)
+      #   @param [RDF::URI, String] processor_url The CSVW extractor web service.
       #   @return [Boolean] PASS/FAIL result
-      def run(extract_url, options = {})
+      def run(processor_url, options = {})
         # Build the RDF extractor URL
         # FIXME: include other processor control parameters
-        extract_url = ::URI.decode(extract_url) + TEST_URI.join(self.action)
+        processor_url = (::URI.decode(processor_url) + TEST_URI.join(self.action_loc)).to_s
 
         logger.info "Run #{self.inspect}"
-        logger.debug "extract from: #{extract_url}"
+        logger.debug "extract from: #{processor_url}"
 
         # Retrieve the remote graph
         # Use the actual result file if using the reflector
-        extract_url = result_loc if extract_url.to_s.start_with?('http://example.org/reflector')
-        extracted = RestClient.get(extract_url)
-        logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
+        processor_url = result_loc if processor_url.start_with?('http://example.org/reflector')
+        begin
+          extracted = RestClient.get(processor_url)
+          logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
 
-        result = if json?
-          # Read both as JSON and compare
-          extracted_object = JSON.parse(extracted)
-          result_object = JSON.parse(result_body)
-          JsonCompare.get_diff(extracted_object, result_object).empty?
-        else
-          # parse extracted as RDF
-          reader = RDF::Reader.for(sample: extacted_doc)
-          graph = RDF::Graph.new << reader.new(extracted)
-          logger.debug "extracted:\n#{graph.count} statements"
-          if sparql?
-            SPARQL::Grammer.open(result_loc) do |query|
-              graph.query(query)
-            end
+          result = if json?
+            # Read both as JSON and compare
+            extracted_object = JSON.parse(extracted)
+            result_object = JSON.parse(result_body)
+            JsonCompare.get_diff(extracted_object, result_object).empty?
           else
-            result_graph = RDF::Graph.load(result_loc)
-            graph.isomorphic?(result_graph)
+            # parse extracted as RDF
+            reader = RDF::Reader.for(sample: extacted_doc)
+            graph = RDF::Graph.new << reader.new(extracted)
+            logger.debug "extracted:\n#{graph.count} statements"
+            if sparql?
+              SPARQL::Grammer.open(result_loc) do |query|
+                graph.query(query)
+              end
+            else
+              result_graph = RDF::Graph.load(result_loc)
+              graph.isomorphic?(result_graph)
+            end
           end
+
+          result = !result if negative?
+          status = result ? "Pass" : "Fail"
+        rescue RestClient::ResourceNotFound => e
+          logger.error "Extraction error: #{e.message}"
+          extracted, status = e.message, "Error"
+          result = false
         end
 
-        result = !result if negative?
-
         if block_given?
-          yield extracted, result
+          yield extracted, status
         else
           result
         end

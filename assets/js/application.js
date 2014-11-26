@@ -62,6 +62,7 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
     function ($scope, $log, Test) {
       // Processors from script tag
       $scope.processors = angular.fromJson($("script#processors").text());
+      $scope.processorUrl = $scope.processors[0].endpoint;
 
       // Automatically run tests?
       $scope.autorun = false;
@@ -114,7 +115,7 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
         } else {
           $log.info("Run " + test.id);
           test.status = "Running";
-          test.$run({testId: test.id},
+          test.$run({testId: test.id, processorUrl: $scope.processorUrl},
             function(response, responseHeaders) {
               if (autonext && $scope.nexts[test.id]) {
                 $scope.runTest($scope.nexts[test.id], true);
