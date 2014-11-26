@@ -104,9 +104,7 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
       $scope.runTest = function(test) {
         test.status = "Running";
         var response = test.$run({testId: test.id},
-          function(response, responseHeaders) {
-            test.status = response.status;
-          },
+          function(response, responseHeaders) {},
           function(responseHeaders) {
             test.status = "Error";
           });

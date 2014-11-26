@@ -49,7 +49,7 @@
   %ul.tests.container.list-group{"ng-show" => "tests.length"}
     %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
       %div.col-md-1.col-sm-1.col-xs-1
-        %button.btn.btn-primary.test{"ng-click" => "runTest(test)"}
+        %button.btn.test{"ng-click" => "runTest(test)", "ng-class" => "{'btn-default': (test.status === 'Running'), 'btn-primary': (test.status === 'Test'), 'btn-success': (test.status === 'Pass'), 'btn-warning': (test.status === 'Fail'), 'btn-danger': (test.status === 'Error')}"}
           {{test.status}}
       %div.col-md-9.col-sm-9.col-xs-9
         %span.test-num
