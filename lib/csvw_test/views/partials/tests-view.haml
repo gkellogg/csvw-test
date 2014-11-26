@@ -6,14 +6,13 @@
     {{description}}
   %ul.tests.container-fluid.list-group{"ng-show" => "tests.length"}
     %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
-      %div.col-md-1
+      %div.col-md-1.col-sm-1.col-xs-1
         %button.btn.btn-primary.test{"ng-click" => "runTest(test)"}
           {{test.status}}
-      %div.col-md-9
+      %div.col-md-9.col-sm-9.col-xs-9
         %span.test-num
           Test {{test.id}}:
         %span.description
           {{test.comment}}
       %div.pull-right
         %button.btn.btn-info.details{"data-loading-text" => "Loading details ...", "data-complete-text" => "details", autocomplete: "off"}="details"
-        %button.btn.btn-info.source{"data-loading-text" => "Loading tests ...", "data-complete-text" => "source", autocomplete: "off"}="source"

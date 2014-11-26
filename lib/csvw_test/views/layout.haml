@@ -19,7 +19,7 @@
       != processors
     != js :app
   %body(role="document")
-    %div.container
+    %div.container-fluid
       %header.navbar.navbar-inverse.navbar-fixed-top{role: :navigation}
         %div.navbar-header
           %button.navbar-toggle(type="button" data-toggle="collapse" data-target=".nav-collapse")
@@ -34,7 +34,7 @@
             %li
               %span.vers
                 = CSVWTest::VERSION.to_s
-    %div.container#main(role="main")
+    %div.container-fluid#main(role="main")
       = yield
     %footer
       %p

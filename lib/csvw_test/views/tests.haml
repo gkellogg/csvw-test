@@ -16,12 +16,12 @@
         %button.btn.btn-primary#run-all{"data-loading-text" => "Running", :autocomplete => "off"}
           Run All Tests
   %div.row#test-progress
-    %div.col-md-10.progress{max: "tests.length", value: "completed()"}
+    %div.col-md-10.col-sm-10.col-xs-10.progress{max: "tests.length", value: "completed()"}
       %div.progress-bar.progress-bar-success{value: "passed()", type: "success"}
         {{passed() / tests.length * 100}}%
       %div.progress-bar.progress-bar-warning{value: "failed()", type: "warning"}
         {{failed() / tests.length * 100}}%
-    %div.col-md-2.float-right
+    %div.col-md-2.col-sm-2.col-xs-2.float-right
       %div.test-status
         %div
           Total:
