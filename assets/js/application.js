@@ -60,13 +60,22 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
    })
   .controller('TestListCtrl', ['$scope', '$log', 'Test',
     function ($scope, $log, Test) {
-      // Get all terms from the vocabulary
-      $log.debug("TestListCtrl");
       // Processors from script tag
       $scope.processors = angular.fromJson($("script#processors").text());
 
+      // Automatically run tests?
+      $scope.autorun = false;
+
       // Tests retrieved in manifest from service
-      $scope.tests = Test.query();
+      $scope.nexts = {};
+      $scope.tests = Test.query({}, function(tests) {
+        $log.debug(tests);
+
+        // Nexts for each test
+        for (i = 0; i < tests.length - 1; i++) {
+          $scope.nexts[tests[i].id] = tests[i+1];
+        }
+      });
 
       // Watch changes to tests
       //$scope.$watch('tests', function(newVal) {
@@ -93,27 +102,37 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
           return memo + (test.status === "Test" ? 0 : 1);
         }, 0);
       };
-      $scope.running = function() {
-        return _.any($scope.tests, function(memo, test) {
-          return test.status === "Running";
-        }, 0);
-      };
       $scope.setProcessor = function(proc) {
         $scope.processorUrl = proc.endpoint;
       };
-      $scope.runTest = function(test) {
-        test.status = "Running";
-        var response = test.$run({testId: test.id},
-          function(response, responseHeaders) {},
-          function(responseHeaders) {
-            test.status = "Error";
-          });
+      $scope.runTest = function(test, autonext) {
+        if (test === "All") {
+          $log.info("Run all tests");
+          _.each($scope.tests, function(test) { test.status = "Test"; });
+          $scope.autorun = true;
+          $scope.runTest($scope.tests[0], true);
+        } else {
+          $log.info("Run " + test.id);
+          test.status = "Running";
+          test.$run({testId: test.id},
+            function(response, responseHeaders) {
+              if (autonext && $scope.nexts[test.id]) {
+                $scope.runTest($scope.nexts[test.id], true);
+              }
+            },
+            function(responseHeaders) {
+              test.status = "Error";
+              if (autonext && $scope.nexts[test.id]) {
+                $scope.runTest($scope.nexts[test.id], true);
+              }
+            }
+          );
+        }
       };
     }
   ])
   .controller('TestDetailCtrl', ['$scope', '$routeParams', '$log', 'Test',
     function ($scope, $routeParams, $log, Test) {
-      $log.debug("TestDetailCtrl");
       $scope.test = Test.get({testId: $routeParams.testId});
     }
   ]);

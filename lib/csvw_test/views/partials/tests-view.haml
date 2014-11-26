@@ -1,15 +1,31 @@
 // Templates for Angular.js rendering
-%div.row#test-progress
+%div.row
+  %ul.pull-right.list-inline#processor
+    %li.dropdown
+      %button.btn.btn-primary.dropdown-toggle{"data-toggle" => "dropdown", href: "#", "aria-expanded" => "false"}
+        Processor
+        %b.caret
+      %ul.processors.dropdown-menu{role: "menu"}
+        %li{id: "{{processor.id}}", 'ng-repeat' => 'processor in processors'}
+          %a{"ng-click" => "setProcessor(processor)", "data-value" => "{{processor.endpoint}}"}
+            {{processor.name}}
+    %li
+      %form
+        %input.search-query#processor-url{:type => "text", :placeholder => "Processor URL", "ng-model" => "processorUrl"}
+    %li
+      %button.btn.btn-primary#run-all{"ng-click" => "runTest('All')"}
+        Run All Tests
+%div.row#test-progress{"ng-show" => "autorun"}
   %div.col-md-10.col-sm-10.col-xs-10.progress
     %div.progress-bar.progress-bar-success{role: "progressbar", "aria-valuenow" => "{{passed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{passed() / tests.length * 100}}%"}
-      %span.sr-only
-        {{passed() / tests.length * 100}}%
+      %span{"ng-class" => '{"sr-only": passed() == 0}'}
+        {{passed()}}
     %div.progress-bar.progress-bar-warning{role: "progressbar", "aria-valuenow" => "{{failed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{failed() / tests.length * 100}}%"}
-      %span.sr-only
-        {{failed() / tests.length * 100}}%
+      %span{"ng-class" => '{"sr-only": failed() == 0}'}
+        {{failed()}}
     %div.progress-bar.progress-bar-danger{role: "progressbar", "aria-valuenow" => "{{errored()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{errored() / tests.length * 100}}%"}
-      %span.sr-only
-        {{errored() / tests.length * 100}}%
+      %span{"ng-class" => '{"sr-only": errored() == 0}'}
+        {{errored()}}
   %div.col-md-2.col-sm-2.col-xs-2.float-right
     %div.test-status
       %div
@@ -28,10 +44,6 @@
         Errored:
         %span.test-errored
           {{errored()}}
-      %div
-        Running:
-        %span.test-running
-          {{running()}}
       %div.btn-group#earl
         %button.btn.btn-primary.dropdown-toggle{"data-toggle" => "dropdown", href: "#", "aria-expanded" => "false"}
           EARL Report
@@ -41,6 +53,56 @@
             %a.show{href: "#"}="Show"
           %li
             %a.source{href: "#"}="Source"
+%div.row
+  %h2= "Overview"
+  %noscript
+    %p
+      WARNING: You need Javascript enabled to use this web page!
+  %p
+    The CSVW Test Suite provides an interactive mechanism to check the 
+    conformance of an CSVW processor. 
+    This service is intended for anybody that wants to see how CSVW works as 
+    well as developers that want to do conformance testing on their own 
+    CSVW implementations.
+  %p
+    There are several things that you can do on this web page:
+  %ul
+    %li
+      To run a unit test, click on the
+      %button.btn.btn-primary= "Test"
+      link.
+    %li
+      To see the details of a unit test, click on the
+      %button.btn.btn-info= "details"
+      link.
+    %li
+      You can execute every unit test by clicking on the
+      %button.btn.btn-primary= "Run All Tests"
+      button.
+    %li
+      After running all tests, you can generate an <a href="">EARL Report</a>
+      using the
+      %button.btn.btn-primary= "EARL Report"
+      button.
+%div.row
+  %h2= "Status"
+  %ul
+    %li
+      These tests are in active development by the
+      %a{:href => "http://www.w3.org/2013/csvw/"}
+        CSV on the Web Working Group
+      at the
+      %a{:href => "http://www.w3c.org"}
+        World Wide Web Consortium
+    %li
+      These tests may be used to check conformance for a CSVW.
+    %li
+      The tests are subject to change at any point between now and September 2015.
+    %li
+      All bugs, suggestions and thoughts about The CSVW Test Suite
+      should be sent to the
+      %a{:href => "mailto:public-csv-wg"}
+        CSV on the Web Working Group mailing list.
 %div.row
   %h1
     {{title}}
