@@ -25,7 +25,7 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
     }
   ])
   // Test factory for returning individual test entries
-  .factory('Test', ['$resource', function($resource) {
+  .factory('Test', ['$resource', '$log', function($resource, $log) {
     return $resource('tests/:testId', {}, {
       // Fetches manifest and extracts test entries
       query: {
@@ -36,7 +36,10 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
           var jld = angular.fromJson(data)
           if(jld['@graph']) {
             // Returning the entire manifest, extract test entries
-            return(jld['@graph'][0].entries);
+            return(_.map(jld['@graph'][0].entries, function(test) {
+              test.status = "Test";
+              return test;
+            }));
           } else {
             // Returning a specific entry
             return(jld['@graph'][0].entries);
@@ -44,7 +47,10 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
         },
         isArray: true
       },
-      run: {method:'POST', params:{testId:'tests', processorUrl:'processorUrl'}}
+      run: {
+        method:'POST',
+        params:{testId:'tests', processorUrl:'processorUrl'}
+      }
     });
   }])
   .controller('DebugController', function($scope, $route, $routeParams, $location) {
@@ -61,27 +67,39 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
 
       // Tests retrieved in manifest from service
       $scope.tests = Test.query();
+
+      // Watch changes to tests
+      //$scope.$watch('tests', function(newVal) {
+      //  $log.debug("test changed: " + _.map(newVal, function(test) {return test.status}));
+      //}, true)
+
       $scope.passed = function() {
         return _.reduce($scope.tests, function(memo, test) {
-          return memo + (test.status == "PASSED" ? 1 : 0);
+          return memo + (test.status === "Passed" ? 1 : 0);
         }, 0);
       };
       $scope.failed = function() {
         return _.reduce($scope.tests, function(memo, test) {
-          return memo + (test.status == "FAILED" ? 1 : 0);  // XXX: ERRORED?
+          return memo + (test.status === "Failed" ? 1 : 0);  // XXX: Errored?
         }, 0);
       };
       $scope.running = function() {
         return _.any($scope.tests, function(memo, test) {
-          return test.status == "RUNNING";
+          return test.status === "Running";
         }, 0);
       };
       $scope.setProcessor = function(proc) {
         $scope.processorUrl = proc.endpoint;
       };
       $scope.runTest = function(test) {
-        test.status = "RUNNING"
-        test.$run();
+        test.status = "Running";
+        var response = test.$run({testId: test.id},
+          function(response, responseHeaders) {
+            test.status = response.status;
+          },
+          function(responseHeaders) {
+            test.status = "Error";
+          });
       };
     }
   ])

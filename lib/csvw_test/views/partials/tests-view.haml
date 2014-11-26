@@ -8,7 +8,7 @@
     %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
       %div.col-md-1
         %button.btn.btn-primary.test{"ng-click" => "runTest(test)"}
-          Test
+          {{test.status}}
       %div.col-md-9
         %span.test-num
           Test {{test.id}}:
