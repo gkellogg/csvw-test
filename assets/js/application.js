@@ -75,12 +75,22 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
 
       $scope.passed = function() {
         return _.reduce($scope.tests, function(memo, test) {
-          return memo + (test.status === "Passed" ? 1 : 0);
+          return memo + (test.status === "Pass" ? 1 : 0);
         }, 0);
       };
       $scope.failed = function() {
         return _.reduce($scope.tests, function(memo, test) {
-          return memo + (test.status === "Failed" ? 1 : 0);  // XXX: Errored?
+          return memo + (test.status === "Fail" ? 1 : 0);  // XXX: Errored?
+        }, 0);
+      };
+      $scope.errored = function() {
+        return _.reduce($scope.tests, function(memo, test) {
+          return memo + (test.status === "Error" ? 1 : 0);
+        }, 0);
+      };
+      $scope.completed = function() {
+        return _.reduce($scope.tests, function(memo, test) {
+          return memo + (test.status === "Test" ? 0 : 1);
         }, 0);
       };
       $scope.running = function() {

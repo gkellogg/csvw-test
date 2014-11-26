@@ -1,10 +1,52 @@
 // Templates for Angular.js rendering
+%div.row#test-progress
+  %div.col-md-10.col-sm-10.col-xs-10.progress
+    %div.progress-bar.progress-bar-success{role: "progressbar", "aria-valuenow" => "{{passed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{passed() / tests.length * 100}}%"}
+      %span.sr-only
+        {{passed() / tests.length * 100}}%
+    %div.progress-bar.progress-bar-warning{role: "progressbar", "aria-valuenow" => "{{failed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{failed() / tests.length * 100}}%"}
+      %span.sr-only
+        {{failed() / tests.length * 100}}%
+    %div.progress-bar.progress-bar-danger{role: "progressbar", "aria-valuenow" => "{{errored()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{errored() / tests.length * 100}}%"}
+      %span.sr-only
+        {{errored() / tests.length * 100}}%
+  %div.col-md-2.col-sm-2.col-xs-2.float-right
+    %div.test-status
+      %div
+        Total:
+        %span.test-total
+          {{tests.length}}
+      %div
+        Passed:
+        %span.test-passed
+          {{passed()}}
+      %div
+        Failed:
+        %span.test-failed
+          {{failed()}}
+      %div
+        Errored:
+        %span.test-errored
+          {{errored()}}
+      %div
+        Running:
+        %span.test-running
+          {{running()}}
+      %div.btn-group#earl
+        %button.btn.btn-primary.dropdown-toggle{"data-toggle" => "dropdown", href: "#", "aria-expanded" => "false"}
+          EARL Report
+          %span.caret/
+        %ul.dropdown-menu{role: "menu"}
+          %li
+            %a.show{href: "#"}="Show"
+          %li
+            %a.source{href: "#"}="Source"
 %div.row
   %h1
     {{title}}
   %div
     {{description}}
-  %ul.tests.container-fluid.list-group{"ng-show" => "tests.length"}
+  %ul.tests.container.list-group{"ng-show" => "tests.length"}
     %li.row.list-group-item{id: "{{test.id}}", 'ng-repeat' => 'test in tests'}
       %div.col-md-1.col-sm-1.col-xs-1
         %button.btn.btn-primary.test{"ng-click" => "runTest(test)"}
