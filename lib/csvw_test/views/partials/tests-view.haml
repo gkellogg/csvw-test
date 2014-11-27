@@ -45,14 +45,22 @@
         %span.test-errored
           {{errored()}}
       %div.btn-group#earl
-        %button.btn.btn-primary.dropdown-toggle{"data-toggle" => "dropdown", href: "#", "aria-expanded" => "false"}
+        %button.btn.btn-info{'ng-click' => 'getDoap()'}
           EARL Report
-          %span.caret/
-        %ul.dropdown-menu{role: "menu"}
-          %li
-            %a.show{href: "#"}="Show"
-          %li
-            %a.source{href: "#"}="Source"
+%div.row.earl-report.alert.alert-info{role: 'alert', "ng-show" => "doap"}
+  %button.close{type: "button", 'ng-click' => 'doap = null'}
+    %span{"aria-hidden" => true}
+      &times;
+    %span.sr-only
+      Close
+  %pre.col-md-12.col-sm-12.col-xs-12
+    {{doap}}
+
+    = %(<> foaf:primaryTopic <{{processorDoap()}}> ;)
+    = %(  dc:issued "{{doapDate.toISOString()}}"^^xsd:dateTime .)
+
+    %div{'ng-repeat' => 'test in tests', 'ng-skip' => 'test.date'}<
+      = assertion
 %div.row
   %h2= "Overview"
   %noscript

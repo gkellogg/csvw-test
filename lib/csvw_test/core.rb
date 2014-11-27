@@ -23,7 +23,7 @@ module CSVWTest
 
       def entries
         # Map entries to resources
-        attributes['entries'].map {|e| Entry.new(e, options)}
+        @entries ||= attributes['entries'].map {|e| Entry.new(e, options)}
       end
     end
 

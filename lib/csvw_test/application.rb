@@ -162,7 +162,71 @@ module CSVWTest
       if File.exist?(p = File.join(settings.root, "assets/partials/#{params[:view]}"))
         send_file p, type: 'text/html'
       else
-        haml request.path.sub('.html', '').to_sym, layout: false, locals: {}
+        haml request.path.sub('.html', '').to_sym,
+          layout: false,
+          locals: {
+            assertion: %([ a earl:Assertion;
+  earl:assertedBy <>;
+  earl:subject <{{processorDoap()}}>;
+  earl:test <#{CSVWTest::TEST_URI}{{test.id}}>;
+  earl:result [
+   a earl:TestResult;
+   earl:outcome earl:{{test.status.toLowerCase()}};
+   dc:date \"{{test.date.toISOString()}}\"^^xsd:dateTime];
+  earl:mode earl:automatic ] .)
+          }
+      end
+    end
+
+    # Return EARL preamble for selected processor
+    #
+    # @method get_earl(processorUrl)
+    # @overload get "/earl"
+    # @param [Hash{String => String}] params
+    # @option params [String] :processorUrl
+    #   ID of processor from processors.json, used to find DOAP information.
+    get "/earl.?:ext?" do
+      processors = JSON.parse(File.read(File.join(settings.root, "processors.json")))
+      info = processors.detect {|p| p['endpoint'] == params['processorUrl']} || processors.last
+
+      # Load DOAP definitions
+      doap_url = info["doap_url"] || info["doap"]
+      request.logger.info("Load doap info for #{params['processorId']} from #{doap_url}")
+      if doap_url.start_with?('/')
+        doap_doc = File.read(File.join(settings.root, doap_url))
+      else
+        doap_doc = RestClient.get(doap_url)
+      end
+
+      reader = RDF::Reader.for(doap_url) {doap_doc}
+      unless reader.class == RDF::Turtle::Reader
+        # Turn it into Turtle
+        graph = RDF::Graph.new << reader.new(doap_doc)
+        doap_doc = graph.dump(:ttl, standard_prefixes: true)
+      end
+
+      # Add EARL prefix, if necessary
+      {
+        foaf: RDF::FOAF.to_s,
+        dc: RDF::DC.to_s,
+        earl: "http://www.w3.org/ns/earl#",
+        xsd: RDF::XSD.to_s
+      }.each do |prefix, uri|
+        doap_doc = "@prefix #{prefix}: #{uri} .\n" + doap_doc.to_s unless doap_doc.include?("@prefix #{prefix}}:")
+      end
+
+      respond_to(params[:ext]) do |wants|
+        wants.json {
+          etag doap_doc.hash
+          content_type :json
+          jbody = {doap: doap_doc}.to_json
+          body jbody
+        }
+        wants.ttl {
+          etag doap_doc.hash
+          content_type :ttl
+          body doap_doc
+        }
       end
     end
 

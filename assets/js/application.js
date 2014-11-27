@@ -58,8 +58,8 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
      $scope.$location = $location;
      $scope.$routeParams = $routeParams;
    })
-  .controller('TestListCtrl', ['$scope', '$log', 'Test',
-    function ($scope, $log, Test) {
+  .controller('TestListCtrl', ['$scope', '$log', '$http', 'Test',
+    function ($scope, $log, $http, Test) {
       // Processors from script tag
       $scope.processors = angular.fromJson($("script#processors").text());
       $scope.processorUrl = $scope.processors[0].endpoint;
@@ -106,6 +106,20 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
       $scope.setProcessor = function(proc) {
         $scope.processorUrl = proc.endpoint;
       };
+      $scope.processorDoap = function() {
+        var proc = _.find($scope.processors, function(proc) {
+          return proc.endpoint === $scope.processorUrl;
+        }) || _.last($scope.processors);
+        return proc.doap;
+      };
+      $scope.getDoap = function() {
+        $http.get('/earl', {params: {processorUrl: $scope.processorUrl}})
+          .success(function(data, status) {
+            $log.debug(data);
+            $scope.doap = data.doap;
+          });
+        $scope.doapDate = new Date;
+      };
       $scope.runTest = function(test, autonext) {
         if (test === "All") {
           $log.info("Run all tests");
@@ -117,12 +131,14 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
           test.status = "Running";
           test.$run({testId: test.id, processorUrl: $scope.processorUrl},
             function(response, responseHeaders) {
+              test.date = new Date;
               if (autonext && $scope.nexts[test.id]) {
                 $scope.runTest($scope.nexts[test.id], true);
               }
             },
             function(responseHeaders) {
               test.status = "Error";
+              test.date = new Date;
               if (autonext && $scope.nexts[test.id]) {
                 $scope.runTest($scope.nexts[test.id], true);
               }
