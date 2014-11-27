@@ -129,6 +129,11 @@
             Close
         %div
           %h3
+            Type
+            %span.doc-url
+              {{test.type}}
+        %div
+          %h3
             Source Document
             %em.doc-url
               %a.window
@@ -151,3 +156,8 @@
                 {{test.extracted_loc}}
           %pre<
             {{test.extracted_body}}
+        %div{'ng-show' => "test.error"}
+          %h3
+            Error
+          %pre<
+            {{test.error}}

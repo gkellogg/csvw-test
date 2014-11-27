@@ -141,12 +141,13 @@ module CSVWTest
       raise Sinatra::NotFound, "No test entry found" unless entry
     
       # Run the test, and re-serialize the entry, including test results
-      entry.run(processor_url) do |body, status|
+      entry.run(processor_url) do |extracted, status, error|
         content_type :jsonld
-        entry.attributes.merge(
+        body entry.attributes.merge(
           extracted_loc:  (processor_url + entry.action_loc),
-          extracted_body: body,
-          status:         status
+          extracted_body: extracted,
+          status:         status,
+          error:          (error.inspect if error)
         ).to_json
       end
     end

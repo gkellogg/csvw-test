@@ -115,6 +115,8 @@ module CSVWTest
         logger.info "Run #{self.inspect}"
         logger.debug "extract from: #{processor_url}"
 
+        error = nil
+
         # Retrieve the remote graph
         # Use the actual result file if using the reflector
         processor_url = result_loc if processor_url.start_with?('http://example.org/reflector')
@@ -146,12 +148,16 @@ module CSVWTest
           status = result ? "Pass" : "Fail"
         rescue RestClient::ResourceNotFound => e
           logger.error "Extraction error: #{e.message}"
-          extracted, status = e.message, "Error"
+          extracted, error, status = nil, e, "Error"
+          result = false
+        rescue
+          logger.error "Extraction exception: #{$!.inspect}"
+          error, status = $!, "Error"
           result = false
         end
 
         if block_given?
-          yield extracted, status
+          yield extracted, status, error
         else
           result
         end
