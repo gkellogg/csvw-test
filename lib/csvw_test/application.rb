@@ -10,13 +10,13 @@ module CSVWTest
     configure do
       set :root, APP_DIR
       set :public_folder, PUB_DIR
-      set :environment, ENV.fetch('RACK_ENV', 'development')
+      set :environment, ENV.fetch('RACK_ENV', 'development').to_sym
       set :views, ::File.expand_path('../views',  __FILE__)
       set :app_name, "The CSVW Test Harness"
       set :raise_errors, Proc.new { !settings.production? }
       set :partial_template_engine, :haml
       enable :logging
-      disable :raise_errors, :show_exceptions if settings.environment == "production"
+      disable :raise_errors, :show_exceptions if settings.environment == :production
 
       STDERR.puts "configure mode = #{settings.environment}"
 
@@ -41,8 +41,9 @@ module CSVWTest
           /js/application.js
         )
 
-        js_compression  :jsmin
-        css_compression :simple
+        # Skip compression
+        #js_compression  :jsmin
+        #css_compression :simple
       end
     end
 
@@ -62,7 +63,7 @@ module CSVWTest
     end
 
     before do
-      request.logger.level = Logger::DEBUG unless settings.environment == 'production'
+      request.logger.level = Logger::DEBUG unless settings.environment == :production
       request.logger.info "#{request.request_method} #{request.path_info} " +
         params.merge(Accept: request.accept.map(&:to_s)).map {|k,v| "#{k}=#{v}"}.join(" ")
     end
