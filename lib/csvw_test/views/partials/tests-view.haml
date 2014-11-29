@@ -19,13 +19,13 @@
   %div.col-md-10.col-sm-10.col-xs-10.progress
     %div.progress-bar.progress-bar-success{role: "progressbar", "aria-valuenow" => "{{passed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{passed() / tests.length * 100}}%"}
       %span{"ng-class" => '{"sr-only": passed() == 0}'}
-        {{passed()}}
+        {{(passed() / tests.length * 100) | number:0}}%
     %div.progress-bar.progress-bar-warning{role: "progressbar", "aria-valuenow" => "{{failed()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{failed() / tests.length * 100}}%"}
       %span{"ng-class" => '{"sr-only": failed() == 0}'}
-        {{failed()}}
+        {{(failed() / tests.length * 100) | number:0}}%
     %div.progress-bar.progress-bar-danger{role: "progressbar", "aria-valuenow" => "{{errored()}}", "aria-valuemin" => 0, "aria-valuemax" => "{{tests.length}}", style: "width: {{errored() / tests.length * 100}}%"}
       %span{"ng-class" => '{"sr-only": errored() == 0}'}
-        {{errored()}}
+        {{(errored() / tests.length * 100) | number:0}}%
   %div.col-md-2.col-sm-2.col-xs-2.float-right
     %div.test-status
       %div
@@ -45,7 +45,7 @@
         %span.test-errored
           {{errored()}}
       %div.btn-group#earl
-        %button.btn.btn-info{'ng-click' => 'getDoap()'}
+        %button.btn.btn-info{'ng-click' => 'getEarl()'}
           EARL Report
 %div.row.earl-report.alert.alert-info{role: 'alert', "ng-show" => "doap"}
   %button.close{type: "button", 'ng-click' => 'doap = null'}

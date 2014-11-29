@@ -14,7 +14,6 @@
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular#{'.min' if settings.production?}.js"}
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route#{'.min' if settings.production?}.js"}
     %script{src: "//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-resource#{'.min' if settings.production?}.js"}
-    %script{src: "//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.2/ui-bootstrap#{'.min' if settings.production?}.js"}
     %script{id: "processors", type: "application/json"}
       != processors
     != js :app
@@ -38,6 +37,6 @@
       = yield
     %footer
       %p
-        The CSVW test suite is released under a
+        = "The #{settings.app_name} is released under a"
         %a{href: "http://creativecommons.org/about/cc0"}
           Creative Commons CC0 Public Domain Dedication

@@ -2,8 +2,7 @@ source "https://rubygems.org/"
 ruby "2.1.4"
 
 gem 'sinatra'
-gem 'sinatra-assetpack',      '~> 0.3.3'
-gem 'sinatra-partial',        '~> 0.4.0'
+gem 'sinatra-assetpack', '~> 0.3.3'
 gem 'haml'
 gem 'linkeddata'
 gem 'rack-cache'

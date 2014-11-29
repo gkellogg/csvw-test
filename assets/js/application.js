@@ -1,6 +1,6 @@
 /*global $, _, angular*/
 
-var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'])
+var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
   .config(['$routeProvider', '$locationProvider', '$logProvider',
     function($routeProvider, $locationProvider, $logProvider) {
 
@@ -83,36 +83,43 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
       //  $log.debug("test changed: " + _.map(newVal, function(test) {return test.status}));
       //}, true)
 
+      // Number of passing tests
       $scope.passed = function() {
         return _.reduce($scope.tests, function(memo, test) {
           return memo + (test.status === "Pass" ? 1 : 0);
         }, 0);
       };
+      // Number of failing tests
       $scope.failed = function() {
         return _.reduce($scope.tests, function(memo, test) {
           return memo + (test.status === "Fail" ? 1 : 0);  // XXX: Errored?
         }, 0);
       };
+      // Number of errored tests
       $scope.errored = function() {
         return _.reduce($scope.tests, function(memo, test) {
           return memo + (test.status === "Error" ? 1 : 0);
         }, 0);
       };
+      // Have all tests been run?
       $scope.completed = function() {
         return _.reduce($scope.tests, function(memo, test) {
           return memo + (test.status === "Test" ? 0 : 1);
         }, 0);
       };
+      // Set processorUrl from a selected processor
       $scope.setProcessor = function(proc) {
         $scope.processorUrl = proc.endpoint;
       };
+      // Location of DOAP information for _processorUrl_
       $scope.processorDoap = function() {
         var proc = _.find($scope.processors, function(proc) {
           return proc.endpoint === $scope.processorUrl;
         }) || _.last($scope.processors);
         return proc.doap;
       };
-      $scope.getDoap = function() {
+      // Retrieve EARL preamble information as Turtle.
+      $scope.getEarl = function() {
         $http.get('/earl', {params: {processorUrl: $scope.processorUrl}})
           .success(function(data, status) {
             $log.debug(data);
@@ -120,6 +127,8 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource', 'ui.bootstrap'
           });
         $scope.doapDate = new Date;
       };
+      // Run all tests, or an individual test
+      // On completion, optionally invoke subsequent test
       $scope.runTest = function(test, autonext) {
         if (test === "All") {
           $log.info("Run all tests");

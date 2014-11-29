@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'sinatra/assetpack'
-require 'sinatra/partial'
 require 'digest/sha1'
 
 module CSVWTest
@@ -14,7 +13,6 @@ module CSVWTest
       set :views, ::File.expand_path('../views',  __FILE__)
       set :app_name, "The CSVW Test Harness"
       set :raise_errors, Proc.new { !settings.production? }
-      set :partial_template_engine, :haml
       enable :logging
       disable :raise_errors, :show_exceptions if settings.environment == :production
 
@@ -86,7 +84,7 @@ module CSVWTest
       redirect '/tests'
     end
 
-    # GET "/tests/" returns test-manifest with representation dependent on content-negotiation
+    # GET "/tests/" returns test-manifest with representation dependent on content-negotiation. For HTML, load HTML application. Also supports `application/ld+json` and `text/turtle` formats.
     #
     # @method get_manifest
     get '/tests.?:ext?' do
@@ -116,7 +114,9 @@ module CSVWTest
     end
 
     # GET "/tests/:testId" returns a paritulcar test entry.
-    # If no entry is found, it looks for a file in the test directory
+    # If no entry is found, it looks for a file in the test directory.
+    #
+    # TODO: if HTML is requested 
     #
     # @method get_entry
     # @param [String] testId last path component indicating particular test
