@@ -10,6 +10,7 @@ gem 'rack-cache'
 gem 'rest-client'
 gem 'rest-client-components'
 gem 'json-compare'
+gem 'unicorn'
 
 group :development do
   gem 'wirble'
