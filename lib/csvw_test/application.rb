@@ -175,7 +175,7 @@ module CSVWTest
             assertion: %([ a earl:Assertion;
   earl:assertedBy <>;
   earl:subject <{{processorDoap()}}>;
-  earl:test <#{CSVWTest::TEST_URI}{{test.id}}>;
+  earl:test &lt;#{CSVWTest::TEST_URI}{{test.id}}&gt;;
   earl:result [
    a earl:TestResult;
    earl:outcome earl:{{test.status.toLowerCase()}};
