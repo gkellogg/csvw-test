@@ -18,6 +18,12 @@ module CSVWTest
       enable :logging
       disable :raise_errors, :show_exceptions if settings.environment == "production"
 
+      STDERR.puts "configure mode = #{settings.environment}"
+
+      # Load manifest
+      manifest_json = JSON.parse(Core.manifest_json)['@graph'].first
+      set :manifest, Manifest.new(manifest_json)
+
       register Sinatra::AssetPack
 
       mime_type :jsonld, "application/ld+json"
@@ -114,7 +120,7 @@ module CSVWTest
     # @method get_entry
     # @param [String] testId last path component indicating particular test
     get '/tests/:testId' do
-      if entry = get_entry(params[:testId])
+      if entry = settings.manifest.entry(params[:testId])
         set_cache_header
         etag entry.hash
         content_type :jsonld
@@ -137,11 +143,11 @@ module CSVWTest
     post '/tests/:testId' do
       processor_url = params.fetch("processorUrl", "http://example.org/reflector?uri=")
 
-      entry = get_entry(params[:testId])
+      entry = settings.manifest.entry(params[:testId])
       raise Sinatra::NotFound, "No test entry found" unless entry
     
       # Run the test, and re-serialize the entry, including test results
-      entry.run(processor_url) do |extracted, status, error|
+      entry.run(processor_url, logger: request.logger) do |extracted, status, error|
         content_type :jsonld
         body entry.attributes.merge(
           extracted_loc:  (processor_url + entry.action_loc),

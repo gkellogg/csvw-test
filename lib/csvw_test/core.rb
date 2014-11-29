@@ -17,13 +17,24 @@ module CSVWTest
       attr_accessor :options
 
       def initialize(json, options = {})
+        STDERR.puts "Create manifest object"
         @options = options
         super
       end
 
       def entries
         # Map entries to resources
+        STDERR.puts "Load entries" unless @entries
         @entries ||= attributes['entries'].map {|e| Entry.new(e, options)}
+      end
+
+      ##
+      # Return test details, including doc text, sparql, and extracted results
+      #
+      # @param [String] uri of test
+      # @return [Entry]
+      def entry(uri)
+        entries.detect {|te| te.id == uri}
       end
     end
 
@@ -97,8 +108,10 @@ module CSVWTest
       #
       # Updates this test with the result and test status of PASS/FAIL
       #
-      # @override run(processor_url, &block)
+      # @override run(processor_url, options = {}, &block)
       #   @param [RDF::URI, String] processor_url The CSVW extractor web service.
+      #   @param [Hash{Symbol => Object}] options
+      #   @option options [Logger] logger
       #   @yield result_body, status
       #   @yieldparam [String] result_body Returned document
       #   @yieldparam [String] status Pass/Fail/Error result
@@ -106,8 +119,15 @@ module CSVWTest
       #
       # @override run(processor_url)
       #   @param [RDF::URI, String] processor_url The CSVW extractor web service.
+      #   @param [Hash{Symbol => Object}] options
+      #   @option options [Logger] logger
       #   @return [Boolean] PASS/FAIL result
       def run(processor_url, options = {})
+        logger = options.fetch(:logger) {
+          l = Logger.new(STDOUT)  # In case we're not invoked from rack
+          l.level = Logger::DEBUG
+          l
+        }
         # Build the RDF extractor URL
         # FIXME: include other processor control parameters
         processor_url = (::URI.decode(processor_url) + TEST_URI.join(self.action_loc)).to_s
@@ -162,15 +182,6 @@ module CSVWTest
           result
         end
       end
-
-    private
-      def logger
-        @options[:logger] ||= begin
-          l = Logger.new(STDOUT)  # In case we're not invoked from rack
-          l.level = Logger::DEBUG
-          l
-        end
-      end
     end
 
     ##
@@ -178,7 +189,7 @@ module CSVWTest
     #
     # @return [RestClient::Resource]
     def manifest_ttl
-      @manifest_ttl ||= RestClient.get(TEST_URI.join("manifest.ttl").to_s)
+      RestClient.get(TEST_URI.join("manifest.ttl").to_s)
     end
     module_function :manifest_ttl
 
@@ -189,7 +200,6 @@ module CSVWTest
     def manifest_json
       ttl_time = Time.parse(manifest_ttl.headers[:last_modified])
       unless File.exist?(MANIFEST_JSON) && File.mtime(MANIFEST_JSON) >= ttl_time
-        settings.logging.info "Build manifest.jsonld"
         FileUtils.mkdir_p(CACHE_DIR)
         File.open(MANIFEST_JSON, "w") do |f|
           graph = RDF::Graph.new << RDF::Turtle::Reader.new(manifest_ttl)
@@ -200,39 +210,12 @@ module CSVWTest
             end
           end
         end
-        @manifest_json = nil
       end
-      @manifest_json ||= File.read(MANIFEST_JSON)
+      File.read(MANIFEST_JSON)
     rescue
       FileUtils.rm MANIFEST_JSON if File.exist?(MANIFEST_JSON)
       raise
     end
     module_function :manifest_json
-
-    # Get manifest object
-    def get_manifest
-      @manifest ||= Manifest.new(JSON.parse(manifest_json)['@graph'].first, logger: settings.logging)
-    end
-    module_function :get_manifest
-
-    ##
-    # Return test details, including doc text, sparql, and extracted results
-    #
-    # @param [String] uri of test
-    # @return [Entry]
-    def get_entry(uri)
-      get_manifest.entries.detect {|te| te.id == uri}
-    end
-    module_function :get_entry
-  end
-
-  ##
-  # Standalone environment for core functions
-  class StandAlone
-    include Core
-    
-    def url(offset)
-      "http://#{HOSTNAME}#{offset}"
-    end
   end
 end
