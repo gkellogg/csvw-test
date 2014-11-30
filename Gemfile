@@ -20,6 +20,11 @@ group :development do
 end
 
 group :development, :test do
-  gem 'shotgun'
+  gem 'equivalent-xml'
+  gem 'jsonpath',           '~> 0.5.6'
+  gem 'nokogiri'
   gem 'rack-test'
+  gem 'rspec'
+  gem 'rspec-its'
+  gem 'shotgun'
 end

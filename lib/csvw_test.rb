@@ -1,4 +1,5 @@
 require 'logger'
+require 'rdf'
 
 module CSVWTest
   autoload :Application,          "csvw_test/application"

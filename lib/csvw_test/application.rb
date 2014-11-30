@@ -9,7 +9,6 @@ module CSVWTest
     configure do
       set :root, APP_DIR
       set :public_folder, PUB_DIR
-      set :environment, ENV.fetch('RACK_ENV', 'development').to_sym
       set :views, ::File.expand_path('../views',  __FILE__)
       set :app_name, "The CSVW Test Harness"
       set :raise_errors, Proc.new { !settings.production? }
@@ -18,8 +17,14 @@ module CSVWTest
 
       STDERR.puts "configure mode = #{settings.environment}"
 
+      # Cache client requests
+      RestClient.enable Rack::Cache,
+        verbose:     true,
+        metastore:   "file:" + ::File.join(APP_DIR, "cache/meta"),
+        entitystore: "file:" + ::File.join(APP_DIR, "cache/body")
+
       # Load manifest
-      manifest_json = JSON.parse(Core.manifest_json)['@graph'].first
+      manifest_json = JSON.parse(Core.manifest_json)
       set :manifest, Manifest.new(manifest_json)
 
       register Sinatra::AssetPack
@@ -50,6 +55,10 @@ module CSVWTest
       require "better_errors"
       use BetterErrors::Middleware
       BetterErrors.application_root = APP_DIR
+    end
+
+    configure :test do
+      set :logging, ::Logger.new(StringIO.new)
     end
 
     helpers do
@@ -90,7 +99,7 @@ module CSVWTest
     get '/tests.?:ext?' do
       set_cache_header
       respond_to(params[:ext]) do |wants|
-        wants.html {
+        wants.other {
           processors = File.read(File.join(settings.root, "processors.json"))
           content_type :html
           haml :tests, locals: {
@@ -120,15 +129,20 @@ module CSVWTest
     #
     # @method get_entry
     # @param [String] testId last path component indicating particular test
-    get '/tests/:testId' do
+    get '/tests/:testId.?:ext?' do
       if entry = settings.manifest.entry(params[:testId])
-        set_cache_header
-        etag entry.hash
-        content_type :jsonld
-        entry.to_jsonld
+        respond_to(params[:ext]) do |wants|
+          wants.jsonld {
+            set_cache_header
+            etag entry.hash
+            content_type :jsonld
+            body entry.to_json
+          }
+        end
       else
         # Otherwise, it might be a file
-        pass
+        #pass
+        raise Sinatra::NotFound, "No test entry found" unless entry
       end
     end
 
@@ -149,13 +163,17 @@ module CSVWTest
     
       # Run the test, and re-serialize the entry, including test results
       entry.run(processor_url, logger: request.logger) do |extracted, status, error|
-        content_type :jsonld
-        body entry.attributes.merge(
-          extracted_loc:  (processor_url + entry.action_loc),
-          extracted_body: extracted,
-          status:         status,
-          error:          (error.inspect if error)
-        ).to_json
+        respond_to do |wants|
+          wants.jsonld {
+            content_type :jsonld
+            body entry.attributes.merge(
+              extracted_loc:  (processor_url + entry.action_loc),
+              extracted_body: extracted,
+              status:         status,
+              error:          (error.inspect if error)
+            ).to_json
+          }
+        end
       end
     end
 
@@ -242,7 +260,7 @@ module CSVWTest
     # @param [Symbol] ext (type)
     #   optional extension to override accept matching
     def respond_to(type = nil)
-      wants = { '*/*' => Proc.new { raise TypeError, "No handler for #{settings.accept.join(',')}" } }
+      wants = { '*/*' => Proc.new { raise TypeError, "No handler for #{request.accept.join(',')}" } }
       def wants.method_missing(ext, *args, &handler)
         type = ext == :other ? '*/*' : Rack::Mime::MIME_TYPES[".#{ext.to_s}"]
         self[type] = handler

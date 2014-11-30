@@ -30,26 +30,22 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
       // Fetches manifest and extracts test entries
       query: {
         method: 'GET',
-        params: {testId:'.jsonld'},
-        headers: {'Accept':'application/ld+json'},
+        params: {testId: '.jsonld'},
+        headers: {'Accept': 'application/ld+json'},
         transformResponse: function(data) {
           var jld = angular.fromJson(data)
-          if(jld['@graph']) {
-            // Returning the entire manifest, extract test entries
-            return(_.map(jld['@graph'][0].entries, function(test) {
-              test.status = "Test";
-              return test;
-            }));
-          } else {
-            // Returning a specific entry
-            return(jld['@graph'][0].entries);
-          }
+          // extract test entries
+          return(_.map(jld.entries, function(test) {
+            test.status = "Test";
+            return test;
+          }));
         },
         isArray: true
       },
       run: {
         method:'POST',
-        params:{testId:'tests', processorUrl:'processorUrl'}
+        headers: {'Accept': 'application/ld+json'},
+        params:{testId: 'tests', processorUrl: 'processorUrl'}
       }
     });
   }])

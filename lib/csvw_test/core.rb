@@ -18,7 +18,7 @@ module CSVWTest
 
       def initialize(json, options = {})
         STDERR.puts "Create manifest object"
-        @options = options
+        @options = options.merge(context: json['@context'])
         super
       end
 
@@ -103,6 +103,14 @@ module CSVWTest
       )
       end
 
+      # Don't de-resolve
+      def deresolve; attributes; end
+
+      # Add context
+      def to_json
+        attributes.merge('@context' => @options[:context]).to_json
+      end
+
       ##
       # Performs a given unit test given the extractor URL.
       #
@@ -141,7 +149,10 @@ module CSVWTest
         # Use the actual result file if using the reflector
         processor_url = result_loc if processor_url.start_with?('http://example.org/reflector')
         begin
-          extracted = RestClient.get(processor_url)
+          # Indicate format requested; default uses standard RDF mime-types
+          headers = json? ? {"Accept" => "application/json"} : {}
+
+          extracted = RestClient.get(processor_url, headers)
           logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
 
           result = if json?
@@ -205,6 +216,9 @@ module CSVWTest
           graph = RDF::Graph.new << RDF::Turtle::Reader.new(manifest_ttl)
           JSON::LD::API.fromRDF(graph) do |expanded|
             JSON::LD::API.frame(expanded, MANIFEST_FRAME) do |framed|
+              # Extract first object in @graph
+              framed = framed['@graph'].first.merge('@context' => framed['@context'])
+
               json = framed.to_json(JSON::LD::JSON_STATE).gsub(BASE, "")
               f.write json
             end
