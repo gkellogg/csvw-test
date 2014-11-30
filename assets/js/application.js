@@ -7,6 +7,14 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
       $locationProvider.html5Mode(true);
       $logProvider.debugEnabled(true);
       $routeProvider.
+        when('/about', {
+          templateUrl: '/partials/about.html',
+          controller: 'AboutCtrl'
+        }).
+        when('/developers', {
+          templateUrl: '/partials/developers.html',
+          controller: 'DevCtrl'
+        }).
         when('/tests', {
           templateUrl: '/partials/tests-view.html',
           controller: 'TestListCtrl'
@@ -153,6 +161,14 @@ var testApp = angular.module('testApp', ['ngRoute', 'ngResource'])
       };
     }
   ])
+  .controller('AboutCtrl', ['$scope', '$routeParams',
+    function ($scope, $routeParams) {
+    }
+  ])
+.controller('DevCtrl', ['$scope', '$routeParams',
+  function ($scope, $routeParams) {
+  }
+])
   .controller('TestDetailCtrl', ['$scope', '$routeParams', '$log', 'Test',
     function ($scope, $routeParams, $log, Test) {
       $scope.test = Test.get({testId: $routeParams.testId});

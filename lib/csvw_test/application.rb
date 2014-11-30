@@ -122,6 +122,30 @@ module CSVWTest
       end
     end
 
+    # Other endpoints implemented within the application
+    get '/about' do
+      set_cache_header
+      processors = File.read(File.join(settings.root, "processors.json"))
+      content_type :html
+      haml :tests, locals: {
+        processors: processors,
+        angular_app: "testApp",
+        title: "foo",
+        description: "bar"
+      }          
+    end
+    get '/developers' do
+      set_cache_header
+      processors = File.read(File.join(settings.root, "processors.json"))
+      content_type :html
+      haml :tests, locals: {
+        processors: processors,
+        angular_app: "testApp",
+        title: "foo",
+        description: "bar"
+      }          
+    end
+
     # GET "/tests/:testId" returns a paritulcar test entry.
     # If no entry is found, it looks for a file in the test directory.
     #

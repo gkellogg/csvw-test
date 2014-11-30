@@ -10,6 +10,7 @@ gem 'rest-client'
 gem 'rest-client-components'
 gem 'json-compare'
 gem 'unicorn'
+gem 'redcarpet'
 
 group :development do
   gem 'wirble'

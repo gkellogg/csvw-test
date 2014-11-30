@@ -105,6 +105,7 @@ GEM
       rdf (~> 1.1, >= 1.1.4)
     rdf-xsd (1.1.2)
       rdf (~> 1.1)
+    redcarpet (3.2.1)
     rest-client (1.7.2)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
@@ -177,6 +178,7 @@ DEPENDENCIES
   nokogiri
   rack-cache
   rack-test
+  redcarpet
   rest-client
   rest-client-components
   rspec
