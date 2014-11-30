@@ -3,6 +3,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'rspec'
 require 'rack/test'
+require 'webmock/rspec'
 require 'csvw_test'
 require 'matchers'
 require 'logger'
@@ -19,6 +20,8 @@ require 'byebug'
   def mime_type(sym)
     ::Sinatra::Base.mime_type(sym)
   end
+
+  WebMock.allow_net_connect!
 
   ENV['RACK_ENV'] = 'test'
 end

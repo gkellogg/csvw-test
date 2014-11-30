@@ -157,7 +157,7 @@ module CSVWTest
           # Indicate format requested; default uses standard RDF mime-types
           headers = json? ? {"Accept" => "application/json"} : {}
 
-          extracted = RestClient.get(processor_url, headers)
+          extracted = RestClient.get(processor_url, headers.merge(cache_control: 'no-cache'))
           logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
 
           result = if json?

@@ -116,13 +116,26 @@ describe CSVWTest::Application do
     end
 
     context "POST" do
-      before(:all) {post '/tests/test001r', {processorUrl: "http://example.org/reflector?uri="}, "HTTP_ACCEPT" => "application/ld+json"}
+      before(:all) {
+        WebMock.stub_request(:get, "http://example.org/endpoint?url=#{CSVWTest::TEST_URI.join("test001.csv")}").
+          to_return(:body => RestClient.get(CSVWTest::TEST_URI.join("test001.jsonld").to_s),
+                    :status => 200,
+                    :headers => { 'Content-Type' => 'application/ld+json'})
+        post '/tests/test001r', {processorUrl: "http://example.org/endpoint?url="}, "HTTP_ACCEPT" => "application/ld+json"
+      }
 
       it "returns JSON-LD" do
         expect(last_response).to be_ok
         expect(last_response.body).not_to be_empty
         expect(last_response.content_type).to start_with mime_type(:jsonld)
       end
+
+      it "requests application/json", pending: true do
+        # FIXME: Figure this out later
+        expect(WebMock).to have_requested(:get, "http://example.org/endpoint?url=#{CSVWTest::TEST_URI.join("test001.csv")}").
+          with(headers:  {'Content-Type' => 'application/json'})
+      end
+
       {
         "$action"         => ["test001.csv"],
         "$action_body"    => true,
