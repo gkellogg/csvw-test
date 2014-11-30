@@ -167,6 +167,7 @@ module CSVWTest
           wants.jsonld {
             content_type :jsonld
             body entry.attributes.merge(
+              "@context" =>    entry.context,
               extracted_loc:  (processor_url + entry.action_loc),
               extracted_body: extracted,
               status:         status,

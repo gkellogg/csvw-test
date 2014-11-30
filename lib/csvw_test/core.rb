@@ -3,6 +3,7 @@ require 'sparql'
 require 'restclient/components'
 require 'rack/cache'
 require 'fileutils'
+require 'json-compare'
 
 module CSVWTest
   ##
@@ -108,8 +109,12 @@ module CSVWTest
 
       # Add context
       def to_json
-        attributes.merge('@context' => @options[:context]).to_json
+        attributes.merge('@context' => context).to_json
       end
+
+      # Context of this entry
+      # @return [Hash{String => Object}]
+      def context; @options[:context]; end
 
       ##
       # Performs a given unit test given the extractor URL.
@@ -159,7 +164,7 @@ module CSVWTest
             # Read both as JSON and compare
             extracted_object = JSON.parse(extracted)
             result_object = JSON.parse(result_body)
-            JsonCompare.get_diff(extracted_object, result_object).empty?
+            ::JsonCompare.get_diff(extracted_object, result_object).empty?
           else
             # parse extracted as RDF
             reader = RDF::Reader.for(sample: extacted_doc)
