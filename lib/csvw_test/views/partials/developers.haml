@@ -21,9 +21,8 @@
     The processor is called with HTTP Accept header indicating appropriate result formats (currently,
     `text/turtle` (indicating [Turtle](http://www.w3.org/TR/turtle/)),
     `application/json` (indicating [JSON](http://tools.ietf.org/html/rfc7159)), and
-    `text/plain` (indicating [N-Triples](http://www.w3.org/TR/rdf-testcases/#ntriples))), and the processor may
-    respond with an appropriate format. Processors _SHOULD_ set the HTTP `Content-Type` of the resulting
-    document to the associated document Mime Type.
+    `application/n-triples` (indicating [N-Triples](http://www.w3.org/TR/rdf-testcases/#ntriples))).
+    Processors _SHOULD_ set the HTTP `Content-Type` of the resulting document to the associated document Mime Type.
 
     In some cases, the test suite may add additional query parameters to the endpoint URL to test different
     required or optional behaviors, ...
