@@ -75,9 +75,9 @@ describe CSVWTest::Application do
     end
   end
 
-  describe "/tests/test001r" do
+  describe "/tests/%23test001r" do
     context "GET application/ld+json" do
-      before(:all) {get '/tests/test001r', {}, "HTTP_ACCEPT" => "application/ld+json"}
+      before(:all) {get '/tests/%23test001r', {}, "HTTP_ACCEPT" => "application/ld+json"}
       it "gets JSON-LD" do
         expect(last_response).to be_ok
         expect(last_response.body).not_to be_empty
@@ -92,12 +92,12 @@ describe CSVWTest::Application do
         "$action_loc"  => [CSVWTest::TEST_URI.join("test001.csv").to_s],
         "$approval"  => true,
         "$comment"  => true,
-        "$id"      => ["test001r"],
+        "$id"      => ["#test001r"],
         "$name"  => true,
-        "$result"  => ["test001.jsonld"],
-        "$result_loc"  => [CSVWTest::TEST_URI.join("test001.jsonld").to_s],
+        "$result"  => ["test001.ttl"],
+        "$result_loc"  => [CSVWTest::TEST_URI.join("test001.ttl").to_s],
         "$result_body"  => true,
-        "$type"    => ["csvt:TestRdfSimpleEval"],
+        "$type"    => ["csvt:CsvToRdfTest"],
       }.each do |path, value|
         it "has #{path}" do
           expect(last_response.body).to have_jsonpath(path, value)
@@ -106,7 +106,7 @@ describe CSVWTest::Application do
     end
 
     context "GET text/html" do
-      before(:all) {get '/tests/test001r', {}, "HTTP_ACCEPT" => "text/html"}
+      before(:all) {get '/tests/%23test001r', {}, "HTTP_ACCEPT" => "text/html"}
       it "gets HTML", pending: "entry-specific application" do
         get '/tests.html', {}
         expect(last_response).to be_ok
@@ -121,7 +121,7 @@ describe CSVWTest::Application do
           to_return(:body => RestClient.get(CSVWTest::TEST_URI.join("test001.jsonld").to_s),
                     :status => 200,
                     :headers => { 'Content-Type' => 'application/ld+json'})
-        post '/tests/test001r', {processorUrl: "http://example.org/endpoint?url="}, "HTTP_ACCEPT" => "application/ld+json"
+        post '/tests/%23test001r', {processorUrl: "http://example.org/endpoint?url="}, "HTTP_ACCEPT" => "application/ld+json"
       }
 
       it "returns JSON-LD" do

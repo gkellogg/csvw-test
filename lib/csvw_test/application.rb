@@ -162,6 +162,10 @@ module CSVWTest
             content_type :jsonld
             body entry.to_json
           }
+          wants.other {
+            status 500
+            body "Only JSON-LD request type supported for Test detail"
+          }
         end
       else
         # Otherwise, it might be a file
@@ -180,23 +184,35 @@ module CSVWTest
     # @option params [String] :processorUrl
     #   URL of test endpoint, to which the source and run-time parameters are added.
     post '/tests/:testId' do
-      processor_url = params.fetch("processorUrl", "http://example.org/reflector?uri=")
+      begin
+        processor_url = params.fetch("processorUrl", "http://example.org/reflector?uri=")
 
-      entry = settings.manifest.entry(params[:testId])
-      raise Sinatra::NotFound, "No test entry found" unless entry
+        entry = settings.manifest.entry(params[:testId])
+        raise Sinatra::NotFound, "No test entry found" unless entry
     
-      # Run the test, and re-serialize the entry, including test results
-      entry.run(processor_url, logger: request.logger) do |extracted, status, error|
+        # Run the test, and re-serialize the entry, including test results
+        entry.run(processor_url, logger: request.logger) do |extracted, status, error|
+          respond_to do |wants|
+            wants.jsonld {
+              content_type :jsonld
+              body entry.attributes.merge(
+                "@context" =>    entry.context,
+                extracted_loc:  (processor_url + entry.action_loc),
+                extracted_body: extracted,
+                status:         status,
+                error:          (error.inspect if error)
+              ).to_json
+            }
+          end
+        end
+      rescue
+        status 500
         respond_to do |wants|
           wants.jsonld {
-            content_type :jsonld
-            body entry.attributes.merge(
-              "@context" =>    entry.context,
-              extracted_loc:  (processor_url + entry.action_loc),
-              extracted_body: extracted,
-              status:         status,
-              error:          (error.inspect if error)
-            ).to_json
+            body({error: $!.to_s, message: $!.message, backtrace: $!.backtrace}.to_json)
+          }
+          wants.other {
+            $!.message
           }
         end
       end
