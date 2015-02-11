@@ -50,26 +50,26 @@ module CSVWTest
 
       # Alias data and query
       def action_body
-        @action_body ||= RestClient.get(action_loc.to_s)
+        @action_body ||= RDF::Util::File.open_file(action_loc.to_s).read
       end
 
       def result_body
-        @result_body ||= RestClient.get(result_loc.to_s)
+        @result_body ||= RDF::Util::File.open_file(result_loc.to_s).read if result_loc
       end
 
       def action_loc; TEST_URI.join(action).to_s; end
-      def result_loc; TEST_URI.join(result).to_s; end
+      def result_loc; TEST_URI.join(result).to_s if result.is_a?(String); end
 
       def evaluate?
-        Array(attributes['@type']).join(" ").match(/Eval/)
+        !syntax?
       end
 
       def syntax?
-        Array(attributes['@type']).join(" ").match(/Syntax/)
+        Array(type).join(" ").match(/Syntax/)
       end
 
       def positive?
-        !Array(attributes['@type']).join(" ").match(/Negative/)
+        !Array(type).join(" ").match(/Negative/)
       end
       
       def negative?
@@ -77,19 +77,19 @@ module CSVWTest
       end
 
       def json?
-        !Array(attributes['@type']).join(" ").match(/json/i)
+        Array(type).join(" ").match(/json/i)
       end
 
       def sparql?
-        !Array(attributes['@type']).join(" ").match(/sparql/i)
+        Array(type).join(" ").match(/sparql/i)
       end
 
       def attributes
         super.merge(
           action_loc:     self.action_loc,
-          action_body:    self.action_body,
-          result_loc:     self.result_loc,
-          result_body:    self.result_body
+          action_body:    self.action_body
+        ).merge(
+          {result_loc: self.result_loc, result_body: self.result_body}.keep_if {self.result}
         )
       end
 
@@ -157,8 +157,10 @@ module CSVWTest
           # Indicate format requested; default uses standard RDF mime-types
           headers = json? ? {"Accept" => "application/json"} : {}
 
-          extracted = RestClient.get(processor_url, headers.merge(cache_control: 'no-cache'))
-          logger.debug "extracted:\n#{extracted}, content-type: #{extracted.headers[:content_type].inspect}"
+          extracted = RDF::Util::File.open_file(processor_url, use_net_http: true, headers: headers)
+          content_type = extracted.content_type rescue nil
+          extracted = extracted.read
+          logger.debug "extracted:\n#{extracted}, content-type: #{content_type.inspect}"
 
           result = if json?
             # Read both as JSON and compare
@@ -167,25 +169,28 @@ module CSVWTest
             ::JsonCompare.get_diff(extracted_object, result_object).empty?
           else
             # parse extracted as RDF
-            reader = RDF::Reader.for(sample: extacted_doc)
-            graph = RDF::Graph.new << reader.new(extracted)
+            reader = RDF::Reader.for(
+              content_type: content_type,
+              sample: extracted
+            ) || RDF::NTriples::Reader
+            graph = RDF::Repository.new << reader.new(extracted)
             logger.debug "extracted:\n#{graph.count} statements"
             if sparql?
               SPARQL::Grammer.open(result_loc) do |query|
                 graph.query(query)
               end
             else
-              result_graph = RDF::Graph.load(result_loc)
+              result_graph = RDF::Repository.load(result_loc)
               graph.isomorphic?(result_graph)
             end
           end
 
           result = !result if negative?
           status = result ? "Pass" : "Fail"
-        rescue RestClient::ResourceNotFound => e
+        rescue RestClient::ResourceNotFound, IOError => e
           logger.error "Extraction error: #{e.message}"
-          extracted, error, status = nil, e, "Error"
-          result = false
+          extracted, error, status = nil, e, negative? ? "Pass" : "Error"
+          result = negative?
         rescue
           logger.error "Extraction exception: #{$!.inspect}"
           error, status = $!, "Error"
